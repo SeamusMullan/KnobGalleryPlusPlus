@@ -4,6 +4,8 @@ A desktop application for scraping, downloading, and previewing knob assets from
 
 This project was created with [Ampere](https://github.com/SeamusMullan/ampere).
 
+![KnobGallery++ Screenshot](./assets/screenshot.png)
+
 ## Features
 
 - Browse knobs from the g200kg WebKnobMan gallery
