@@ -1,5 +1,30 @@
 @import './base.css';
 
+/* Custom Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1e1e2e;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #45475a;
+  border-radius: 4px;
+  border: 2px solid #1e1e2e;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #6c7086;
+}
+
+::-webkit-scrollbar-corner {
+  background: #1e1e2e;
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -119,6 +144,7 @@ code {
 .knob-gallery {
   flex: 1;
   overflow-y: auto;
+  scrollbar-gutter: stable;
   padding: 20px;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -229,6 +255,7 @@ code {
   background-color: #313244;
   border-left: 1px solid #45475a;
   overflow-y: auto;
+  scrollbar-gutter: stable;
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -498,4 +525,14 @@ code {
   .actions {
     display: none;
   }
+}
+
+/* Thin Scrollbar for smaller containers */
+.thin-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  border-width: 1px;
 }

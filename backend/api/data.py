@@ -3,7 +3,9 @@ from typing import List, Dict, Any, Optional
 import os
 
 from services.data_service import knob_gallery_service
+from services.enhanced_download import EnhancedDownloader
 from core.models import KnobAsset, KnobGalleryResponse, ScrapeStatus
+from core.config import settings
 
 router = APIRouter()
 
@@ -47,9 +49,9 @@ async def get_scrape_status():
 
 @router.post("/thumbnails/download")
 async def download_thumbnails(background_tasks: BackgroundTasks):
-    """Start downloading thumbnails for all knobs."""
+    """Start downloading thumbnails for all knobs using enhanced multithreaded download."""
     background_tasks.add_task(knob_gallery_service.download_all_thumbnails)
-    return {"message": "Started downloading thumbnails"}
+    return {"message": "Started downloading thumbnails with enhanced multithreaded downloader"}
 
 @router.post("/knobs/{knob_id}/download")
 async def download_knob(knob_id: int):
@@ -58,6 +60,24 @@ async def download_knob(knob_id: int):
     if not success:
         raise HTTPException(status_code=404, detail=message)
     return {"message": message}
+
+@router.post("/knobs/batch-download")
+async def download_multiple_knobs(knob_ids: List[int], background_tasks: BackgroundTasks):
+    """Download multiple knob files in parallel.
+    
+    This endpoint accepts a list of knob IDs and downloads them in parallel using
+    enhanced multithreaded downloader for improved performance.
+    """
+    if not knob_ids:
+        raise HTTPException(status_code=400, detail="No knob IDs provided")
+    
+    # Start the batch download in the background
+    background_tasks.add_task(knob_gallery_service.download_multiple_knobs, knob_ids)
+    
+    return {
+        "message": f"Started downloading {len(knob_ids)} knobs with enhanced multithreaded downloader",
+        "knob_ids": knob_ids
+    }
 
 @router.get("/preview/{knob_id}")
 async def preview_knob(knob_id: int):

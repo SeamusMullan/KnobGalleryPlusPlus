@@ -33,13 +33,47 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['select-knob', 'page-change'])
+const emit = defineEmits(['select-knob', 'page-change', 'batch-download'])
 
 const selectedKnobId = ref<number | null>(null)
+const selectedKnobIds = ref<Set<number>>(new Set())
+const multiSelectMode = ref(false)
 
 const selectKnob = (knobId: number): void => {
-  selectedKnobId.value = knobId
-  emit('select-knob', knobId)
+  if (multiSelectMode.value) {
+    // In multi-select mode, toggle the selection
+    if (selectedKnobIds.value.has(knobId)) {
+      selectedKnobIds.value.delete(knobId)
+    } else {
+      selectedKnobIds.value.add(knobId)
+    }
+  } else {
+    // In single-select mode, just select the knob
+    selectedKnobId.value = knobId
+    emit('select-knob', knobId)
+  }
+}
+
+const toggleMultiSelectMode = (): void => {
+  multiSelectMode.value = !multiSelectMode.value
+
+  // Clear selections when toggling modes
+  if (multiSelectMode.value) {
+    selectedKnobId.value = null
+  } else {
+    selectedKnobIds.value.clear()
+  }
+}
+
+const downloadSelectedKnobs = (): void => {
+  if (selectedKnobIds.value.size === 0) return
+
+  const knobIdsArray = Array.from(selectedKnobIds.value)
+  emit('batch-download', knobIdsArray)
+
+  // Clear selections after download is initiated
+  selectedKnobIds.value.clear()
+  multiSelectMode.value = false
 }
 
 const goToPage = (page: number): void => {

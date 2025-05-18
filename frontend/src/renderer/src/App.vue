@@ -120,6 +120,41 @@ const downloadKnob = async (knobId: number): Promise<void> => {
   }
 }
 
+const downloadMultipleKnobs = async (knobIds: number[]): Promise<void> => {
+  downloadInProgress.value = true
+  try {
+    const response = await fetch(`${API_BASE_URL}/data/knobs/batch-download`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(knobIds)
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to start batch download: ${response.statusText}`)
+    }
+
+    const data = await response.json()
+    console.log('Batch download started:', data.message)
+
+    // If the currently selected knob is in the batch, refresh it after a delay
+    // to give the download time to complete
+    if (selectedKnob.value && knobIds.includes(selectedKnob.value.id)) {
+      setTimeout(async () => {
+        await selectKnob(selectedKnob.value.id)
+      }, 3000)
+    }
+
+    return data
+  } catch (err) {
+    console.error('Error batch downloading knobs:', err)
+    return { error: err.message }
+  } finally {
+    downloadInProgress.value = false
+  }
+}
+
 const selectKnob = async (knobId: number): Promise<void> => {
   try {
     const response = await fetch(`${API_BASE_URL}/data/preview/${knobId}`)
@@ -183,7 +218,12 @@ onMounted(async () => {
           @page-change="fetchKnobs"
         />
 
-        <KnobPreview v-if="selectedKnob" :knob="selectedKnob" :download-in-progress="downloadInProgress" @download="downloadKnob" />
+        <KnobPreview
+          v-if="selectedKnob"
+          :knob="selectedKnob"
+          :download-in-progress="downloadInProgress"
+          @download="downloadKnob"
+        />
       </div>
     </div>
 
