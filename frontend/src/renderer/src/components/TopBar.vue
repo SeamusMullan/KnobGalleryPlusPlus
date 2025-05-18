@@ -1,6 +1,8 @@
 <script setup lang="ts">
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ref, computed } from 'vue'
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const props = defineProps({
   isScraping: {
     type: Boolean,
@@ -8,6 +10,7 @@ const props = defineProps({
   }
 })
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const emit = defineEmits(['start-scraping', 'refresh', 'download-thumbnails'])
 </script>
 

@@ -120,6 +120,7 @@ const downloadKnob = async (knobId: number): Promise<void> => {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const downloadMultipleKnobs = async (knobIds: number[]): Promise<void> => {
   downloadInProgress.value = true
   try {

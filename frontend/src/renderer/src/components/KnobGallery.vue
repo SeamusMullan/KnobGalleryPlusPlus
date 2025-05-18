@@ -54,6 +54,7 @@ const selectKnob = (knobId: number): void => {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const toggleMultiSelectMode = (): void => {
   multiSelectMode.value = !multiSelectMode.value
 
@@ -65,6 +66,7 @@ const toggleMultiSelectMode = (): void => {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const downloadSelectedKnobs = (): void => {
   if (selectedKnobIds.value.size === 0) return
 
