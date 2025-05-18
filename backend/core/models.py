@@ -66,3 +66,4 @@ class ScrapeStatus(BaseModel):
     completed_items: int = 0
     success: bool = False
     error_message: Optional[str] = None
+    message: Optional[str] = None
