@@ -9,6 +9,7 @@ import StatusBar from './components/StatusBar.vue'
 const API_BASE_URL = 'http://localhost:8000'
 
 // App state
+
 const loading = ref(false)
 const error = ref<string | null>(null)
 const knobs = ref<unknown[]>([])
@@ -23,6 +24,7 @@ const scrapeStatus = ref<unknown>({
 const page = ref(1)
 const totalPages = ref(1)
 const totalItems = ref(0)
+const downloadInProgress = ref(false)
 
 // Computed properties
 const isScrapingInProgress = computed(() => scrapeStatus.value.in_progress)
@@ -94,6 +96,7 @@ const startScraping = async (): Promise<void> => {
 }
 
 const downloadKnob = async (knobId: number): Promise<void> => {
+  downloadInProgress.value = true
   try {
     const response = await fetch(`${API_BASE_URL}/data/knobs/${knobId}/download`, {
       method: 'POST'
@@ -112,6 +115,8 @@ const downloadKnob = async (knobId: number): Promise<void> => {
   } catch (err) {
     console.error('Error downloading knob:', err)
     return { error: err.message }
+  } finally {
+    downloadInProgress.value = false
   }
 }
 
@@ -178,7 +183,7 @@ onMounted(async () => {
           @page-change="fetchKnobs"
         />
 
-        <KnobPreview v-if="selectedKnob" :knob="selectedKnob" @download="downloadKnob" />
+        <KnobPreview v-if="selectedKnob" :knob="selectedKnob" :download-in-progress="downloadInProgress" @download="downloadKnob" />
       </div>
     </div>
 

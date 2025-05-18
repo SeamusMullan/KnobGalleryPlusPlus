@@ -274,6 +274,10 @@ class KnobGalleryScraperService:
         if os.path.exists(knob_path):
             knob.downloaded = True
             return str(knob_path)
+
+        if not knob.download_url:
+            logger.error(f"Download URL is missing for knob {knob.id}")
+            return ""
         
         try:
             async with httpx.AsyncClient() as client:

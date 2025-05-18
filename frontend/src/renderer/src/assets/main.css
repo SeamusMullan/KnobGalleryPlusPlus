@@ -127,12 +127,10 @@ code {
   max-height: calc(100vh - 110px); /* Ensuring scrollable height accounting for header and footer */
 }
 
+
 .knob-card {
   background-color: #313244;
   border-radius: 8px;
-  overflow: hidden;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .knob-card:hover {
@@ -144,24 +142,35 @@ code {
   box-shadow: 0 0 0 2px #cba6f7;
 }
 
+
+
 .knob-thumbnail {
   width: 100%;
-  height: 150px;
+  aspect-ratio: 1/1;
   background-color: #45475a;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .knob-thumbnail img {
-  width: 100%;
-  height: auto;
+  width: 90%;
+  height: 90%;
   object-fit: contain;
+  display: block;
+  margin: auto;
+  position: static;
 }
 
 .knob-info {
   padding: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(49,50,68,0.95);
+  /* Optionally overlay at the bottom if you want info inside the square */
+  /* position: absolute; bottom: 0; left: 0; right: 0; */
 }
 
 .knob-name {
@@ -211,8 +220,11 @@ code {
 }
 
 /* KnobPreview Component */
+
 .knob-preview {
-  width: 400px;
+  width: 30vw;
+  min-width: 280px;
+  max-width: 500px;
   height: 100%;
   background-color: #313244;
   border-left: 1px solid #45475a;
@@ -246,9 +258,12 @@ code {
   font-size: 1.2rem;
 }
 
+
 .preview-image {
   width: 100%;
-  height: 250px;
+  height: 28vw;
+  min-height: 150px;
+  max-height: 350px;
   background-color: #45475a;
   display: flex;
   align-items: center;
@@ -256,11 +271,12 @@ code {
   margin-bottom: 16px;
   border-radius: 4px;
   overflow: hidden;
+  transition: height 0.2s;
 }
 
 .preview-image img {
-  max-width: 100%;
-  max-height: 100%;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
 }
 

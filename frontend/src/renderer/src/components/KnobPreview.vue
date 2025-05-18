@@ -18,10 +18,15 @@ interface Knob {
   downloaded?: boolean
 }
 
+
 const props = defineProps({
   knob: {
     type: Object as () => Knob,
     required: true
+  },
+  downloadInProgress: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -98,8 +103,15 @@ const isDownloaded = computed(() => {
       />
     </div>
 
-    <button class="button" :disabled="isDownloaded" @click="downloadKnob">
-      {{ isDownloaded ? 'Downloaded' : 'Download Knob File' }}
+
+    <button class="button" :disabled="isDownloaded || downloadInProgress" @click="downloadKnob">
+      <span v-if="downloadInProgress && !isDownloaded">
+        <svg width="18" height="18" viewBox="0 0 50 50" style="vertical-align: middle; margin-right: 6px;"><circle cx="25" cy="25" r="20" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-dasharray="31.415, 31.415" transform="rotate(72.0001 25 25)"><animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="0.8s" repeatCount="indefinite"/></circle></svg>
+        Downloading...
+      </span>
+      <span v-else>
+        {{ isDownloaded ? 'Downloaded' : 'Download Knob File' }}
+      </span>
     </button>
 
     <div class="preview-details">

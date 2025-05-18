@@ -47,6 +47,18 @@ const goToPage = (page: number): void => {
   emit('page-change', page)
 }
 
+// For page input
+const pageInput = ref(props.currentPage)
+const onPageInput = (e: Event): void => {
+  const val = Number((e.target as HTMLInputElement).value)
+  pageInput.value = val
+}
+const goToInputPage = (): void => {
+  if (pageInput.value >= 1 && pageInput.value <= props.totalPages) {
+    goToPage(pageInput.value)
+  }
+}
+
 const onImageError = (event: Event, knob: Knob): void => {
   // When local image fails to load, try the original source
   const img = event.target as HTMLImageElement
@@ -166,6 +178,32 @@ const paginationItems = computed(() => {
         @click="goToPage(currentPage + 1)"
       >
         &raquo;
+      </button>
+
+      <input
+        v-model="pageInput"
+        type="number"
+        min="1"
+        :max="totalPages"
+        style="
+          width: 60px;
+          margin-left: 12px;
+          border-radius: 4px;
+          border: 1px solid #45475a;
+          padding: 4px 8px;
+          background: #181825;
+          color: #cdd6f4;
+        "
+        :placeholder="`Page`"
+        @keyup.enter="goToInputPage"
+        @input="onPageInput"
+      />
+      <button
+        class="page-button"
+        :disabled="pageInput === currentPage || pageInput < 1 || pageInput > totalPages"
+        @click="goToInputPage"
+      >
+        Go
       </button>
     </div>
   </div>
