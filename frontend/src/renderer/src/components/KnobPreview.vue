@@ -30,7 +30,15 @@ const props = defineProps({
   }
 })
 
+
 const emit = defineEmits(['download'])
+
+// Open folder for the knob file
+const openFolder = () => {
+  if (props.knob.local_path && window.api?.openFolder) {
+    window.api.openFolder(props.knob.local_path)
+  }
+}
 
 const downloadKnob = (): void => {
   emit('download', props.knob.id)
@@ -103,6 +111,15 @@ const isDownloaded = computed(() => {
       />
     </div>
 
+
+    <button
+      class="button"
+      v-if="isDownloaded && knob.local_path"
+      style="margin-bottom: 10px;"
+      @click="openFolder"
+    >
+      Open Folder
+    </button>
 
     <button class="button" :disabled="isDownloaded || downloadInProgress" @click="downloadKnob">
       <span v-if="downloadInProgress && !isDownloaded">
