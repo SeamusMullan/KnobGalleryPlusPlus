@@ -1,6 +1,6 @@
 # KnobGallery++
 
-A desktop application for scraping, downloading, and previewing knob assets from the g200kg WebKnobMan gallery.
+A desktop application for scraping, downloading, and previewing knob assets from the [g200kg WebKnobMan gallery](https://www.g200kg.com/en/webknobman/gallery.php).
 
 This project was created with [Ampere](https://github.com/SeamusMullan/ampere).
 
