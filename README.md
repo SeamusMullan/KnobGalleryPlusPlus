@@ -12,12 +12,25 @@ This project was created with [Ampere](https://github.com/SeamusMullan/ampere).
 - Preview knob images
 - Track download status and progress
 
+## Roadmap
+
+### Probably Happening
+
+- Implement Search Feature for files
+- Allow export to filmstrip for instant use in projects
+
+### Probably Not Happening
+
+- Replace hosting on g200kg with custom implementation (costly)
+- Implementing some kind of user file sharing / uploads (same as above)
+- Implement custom version of JKnobMan / WebKnobMan (too complex & original source code lost)
+
 ## Getting Started
 
 ### Prerequisites
 
 - Node.js 16+
-- Python 3.11+
+- Python 3.11+ (and the uv package manager)
 - npm or yarn
 
 ### Installation
@@ -36,6 +49,8 @@ uv pip install -r requirements.txt
 
 ```bash
 # Start both frontend and backend
+# NOTE: this may not work due to unicode rending issues in FastAPI.
+# If you face this issues run things seperately
 npm run dev
 
 # Or start them separately
@@ -54,8 +69,8 @@ npm run dev:backend
 
 ## Project Structure
 
-```
-├── frontend/        # Electron/Vite frontend
+```text
+├── frontend/        # Electron/Vite + Vue.js frontend
 ├── backend/         # Python/FastAPI backend
 └── package.json     # Root package.json for scripts
 ```
@@ -66,6 +81,6 @@ This project is licensed under the MIT License.
 
 ## About the g200kg WebKnobMan Gallery
 
-The g200kg WebKnobMan gallery (https://www.g200kg.com/en/webknobman/gallery.php) hosts a collection of knob assets created with the WebKnobMan tool. These knobs are used for creating audio plugin interfaces and other UI elements. Most of them are available under various Creative Commons licenses.
+The g200kg WebKnobMan gallery (<https://www.g200kg.com/en/webknobman/gallery.php>) hosts a collection of knob assets created with the WebKnobMan tool. These knobs are used for creating audio plugin interfaces and other UI elements. Most of them are available under various Creative Commons licenses.
 
 This application allows you to easily browse, preview, and download these assets for use in your own projects, respecting the license terms of each asset.
