@@ -53,7 +53,7 @@ app.whenReady().then(() => {
   ipcMain.on('ping', () => console.log('pong'))
 
   // IPC: Open folder for a file
-  ipcMain.handle('open-folder', (event, filePath: string) => {
+  ipcMain.handle('open-folder', (_event, filePath: string) => {
     if (filePath) {
       shell.showItemInFolder(filePath)
     }
