@@ -9,6 +9,7 @@ class Settings:
     WEBKNOBMAN_GALLERY_URL: str = "https://www.g200kg.com/en/webknobman/gallery.php"
     
     # Directory to store downloaded knobs
+    # on windows this will be set to C:\Users\<username>\KnobGallery
     DOWNLOAD_DIR: Path = Path(os.getenv("DOWNLOAD_DIR", os.path.join(os.path.expanduser("~"), "KnobGallery")))
     
     # Create download directory if it doesn't exist

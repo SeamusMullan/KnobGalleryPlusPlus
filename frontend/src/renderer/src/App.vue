@@ -129,6 +129,25 @@ const selectKnob = async (knobId: number): Promise<void> => {
   }
 }
 
+// Download all thumbnails
+const downloadAllThumbnails = async (): Promise<void> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/data/thumbnails/download`, {
+      method: 'POST'
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to start thumbnail download: ${response.statusText}`)
+    }
+
+    const data = await response.json()
+    console.log('Started downloading thumbnails:', data.message)
+  } catch (err) {
+    error.value = err.message
+    console.error('Error downloading thumbnails:', err)
+  }
+}
+
 // Initialize
 onMounted(async () => {
   await fetchKnobs()
@@ -142,6 +161,7 @@ onMounted(async () => {
       :is-scraping="isScrapingInProgress"
       @start-scraping="startScraping"
       @refresh="fetchKnobs"
+      @download-thumbnails="downloadAllThumbnails"
     />
 
     <div class="main-content">

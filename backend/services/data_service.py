@@ -1,4 +1,3 @@
-# filepath: c:\Users\seamu\Documents\Github\KnobGallery++\backend\services\data_service.py
 import os
 import json
 import httpx
@@ -83,7 +82,8 @@ class KnobGalleryScraperService:
             if knob.id == knob_id:
                 return knob
         return None
-      async def fetch_knob_list(self) -> List[Dict[str, Any]]:
+    
+    async def fetch_knob_list(self) -> List[Dict[str, Any]]:
         """Fetch the list of knobs from the gallery."""
         global scrape_status
         scrape_status = ScrapeStatus(in_progress=True)
@@ -106,7 +106,21 @@ class KnobGalleryScraperService:
                 
                 # Parse the JSON response safely
                 import json
-                knob_list = json.loads(content_str)
+                try:
+                    knob_list = json.loads(content_str)
+                except json.JSONDecodeError as e:
+                    # If JSON parsing fails, log the first 100 characters to diagnose
+                    preview = content_str[:100] + "..." if len(content_str) > 100 else content_str
+                    logger.error(f"JSON parsing error: {str(e)}, Content preview: {preview}")
+                    
+                    # Save the problematic content to a file for debugging
+                    debug_path = self.data_dir / "debug_response.txt"
+                    with open(debug_path, "w", encoding="utf-8") as f:
+                        f.write(content_str)
+                    logger.info(f"Saved problematic response to {debug_path}")
+                    
+                    raise
+                
                 logger.info(f"Fetched {len(knob_list)} knobs from gallery")
                 
                 scrape_status.total_items = len(knob_list)
@@ -119,29 +133,106 @@ class KnobGalleryScraperService:
             scrape_status.error_message = error_message
             return []
     
+    async def scrape_gallery_html(self) -> List[Dict[str, Any]]:
+        """Fallback method to scrape the gallery using HTML parsing.
+        This is used when the JSON endpoint fails."""
+        try:
+            async with httpx.AsyncClient() as client:
+                # Make the request to the gallery page
+                response = await client.get(self.base_url)
+                response.raise_for_status()
+                
+                # Parse the HTML
+                html_content = response.text
+                soup = BeautifulSoup(html_content, 'html.parser')
+                
+                knob_list = []
+                # Find all knob panels (based on the class names from the PHP code)
+                knob_panels = soup.select('div.itempanel')
+                
+                for panel in knob_panels:
+                    try:
+                        # Extract the ID from the panel
+                        knob_id = panel.attrs.get('id')
+                        if not knob_id:
+                            continue
+                            
+                        # Extract filename
+                        filename_elem = panel.select_one('div.itemfile')
+                        filename = filename_elem.get_text().strip() if filename_elem else f"knob_{knob_id}"
+                        
+                        # Extract author
+                        author_elem = panel.select_one('div.itemauth')
+                        author = author_elem.get_text().strip().replace("by ", "") if author_elem else ""
+                        
+                        # Extract date
+                        date_elem = panel.select_one('div.itemdate')
+                        date = date_elem.get_text().strip() if date_elem else ""
+                        
+                        # Extract comment
+                        comment_elem = panel.select_one('div.itemcom')
+                        comment = comment_elem.get_text().strip().replace("* ", "") if comment_elem else ""
+                        
+                        # Extract license
+                        license_img = panel.select_one('img.itemlic')
+                        license_type = "CC0"  # Default
+                        if license_img and license_img.attrs.get('src'):
+                            license_src = str(license_img.attrs['src'])
+                            license_type = license_src.split('/')[-1].split('.')[0]
+                        
+                        # Create knob data
+                        knob_data = {
+                            'id': knob_id,
+                            'file': filename,
+                            'author': author,
+                            'license': license_type,
+                            'date': date,
+                            'comment': comment,
+                            'tags': '',  # Tags not directly visible in the gallery view
+                            'size': ''   # Size not directly visible in the gallery view
+                        }
+                        
+                        knob_list.append(knob_data)
+                        
+                    except Exception as e:
+                        logger.error(f"Error parsing knob panel: {str(e)}")
+                
+                logger.info(f"HTML Fallback: Scraped {len(knob_list)} knobs from gallery")
+                return knob_list
+                
+        except Exception as e:
+            error_message = f"Error in HTML fallback scraping: {str(e)}"
+            logger.error(error_message)
+            return []
+            
     def process_knob_data(self, knob_data: List[Dict[str, Any]]) -> List[KnobAsset]:
         """Process the knob data from the API response into KnobAsset objects."""
         knob_assets = []
         
         for item in knob_data:
-            # Construct URLs
-            thumbnail_url = f"https://www.g200kg.com/webknobman/data/gal/{item['id']}.png"
-            download_url = f"{self.base_url}?m=get&n={item['id']}&t=bin&f={quote(item['file'])}"
-            
-            # Create KnobAsset
-            knob_asset = KnobAsset(
-                id=int(item['id']),
-                file=item['file'],
-                author=item.get('author', ''),
-                license=item.get('license', 'CC0'),
-                date=item.get('date', ''),
-                comment=item.get('comment', ''),
-                tags=item.get('tags', ''),
-                size=item.get('size', ''),
-                thumbnail_url=thumbnail_url,
-                download_url=download_url
-            )
-            knob_assets.append(knob_asset)
+            try:
+                # Convert ID to int if it's a string
+                knob_id = int(item['id']) if isinstance(item['id'], str) else item['id']
+                  # Construct URLs
+                thumbnail_url = f"https://www.g200kg.com/en/webknobman/data/gal/{knob_id}.png"
+                download_url = f"{self.base_url}?m=get&n={knob_id}&t=bin&f={quote(item['file'])}"
+                
+                # Create KnobAsset
+                knob_asset = KnobAsset(
+                    id=knob_id,
+                    file=item['file'],
+                    author=item.get('author', ''),
+                    license=item.get('license', 'CC0'),
+                    date=item.get('date', ''),
+                    comment=item.get('comment', ''),
+                    tags=item.get('tags', ''),
+                    size=item.get('size', ''),
+                    thumbnail_url=thumbnail_url,
+                    download_url=download_url
+                )
+                knob_assets.append(knob_asset)
+            except Exception as e:
+                logger.error(f"Error processing knob data: {str(e)} - Item: {item}")
             
         return knob_assets
     
@@ -183,10 +274,6 @@ class KnobGalleryScraperService:
         if os.path.exists(knob_path):
             knob.downloaded = True
             return str(knob_path)
-
-        if not knob.download_url:
-            logger.error(f"Download URL is missing for knob {knob.id}")
-            return ""
         
         try:
             async with httpx.AsyncClient() as client:
@@ -209,8 +296,13 @@ class KnobGalleryScraperService:
         global scrape_status
         
         try:
-            # Fetch the knob list
-            knob_data = await self.fetch_knob_list()
+            # First try fetching using the JSON API
+            try:
+                knob_data = await self.fetch_knob_list()
+            except Exception as e:
+                logger.warning(f"JSON API fetch failed, falling back to HTML parsing: {str(e)}")
+                knob_data = await self.scrape_gallery_html()
+            
             if not knob_data:
                 return False, "No knob data retrieved"
             

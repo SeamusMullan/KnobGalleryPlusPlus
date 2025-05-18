@@ -49,6 +49,15 @@ code {
   display: flex;
   width: 100%;
   height: 100%;
+  overflow: hidden;
+}
+
+.knob-gallery-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
 }
 
 .loading, .error {
@@ -115,6 +124,7 @@ code {
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 16px;
   background-color: #1e1e2e;
+  max-height: calc(100vh - 110px); /* Ensuring scrollable height accounting for header and footer */
 }
 
 .knob-card {

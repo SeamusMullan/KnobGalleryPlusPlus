@@ -1,9 +1,26 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 
+// Define the Knob interface based on the backend model
+interface Knob {
+  id: number
+  file: string
+  author?: string
+  license: string
+  date: string
+  comment?: string
+  tags?: string
+  size?: string
+  thumbnail_url?: string
+  download_url?: string
+  local_path?: string
+  local_thumbnail_path?: string
+  downloaded?: boolean
+}
+
 const props = defineProps({
   knobs: {
-    type: Array,
+    type: Array as () => Knob[],
     required: true
   },
   currentPage: {
@@ -28,6 +45,46 @@ const selectKnob = (knobId: number): void => {
 const goToPage = (page: number): void => {
   if (page < 1 || page > props.totalPages) return
   emit('page-change', page)
+}
+
+const onImageError = (event: Event, knob: Knob): void => {
+  // When local image fails to load, try the original source
+  const img = event.target as HTMLImageElement
+
+  // Set up a counter to prevent infinite loops with onerror handlers
+  let attemptCount = 0
+  const maxAttempts = 2
+
+  const tryFallback = (): void => {
+    attemptCount++
+    if (attemptCount > maxAttempts) {
+      // If we've tried too many times, use the placeholder
+      img.src =
+        'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="#eee"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14px" fill="#999">No Image</text></svg>'
+      img.onerror = null // Prevent any further error handling
+      return
+    }
+
+    if (attemptCount === 1 && knob.thumbnail_url) {
+      // First try the thumbnail URL from the API
+      console.log(
+        `Attempt ${attemptCount}: Using fallback image from API for knob ${knob.id}: ${knob.thumbnail_url}`
+      )
+      img.onerror = tryFallback // Set up for next attempt
+      img.src = knob.thumbnail_url
+    } else {
+      // Second attempt, try the constructed URL
+      const fallbackUrl = `https://www.g200kg.com/en/webknobman/img/${knob.file}.png`
+      console.log(
+        `Attempt ${attemptCount}: Using constructed fallback for knob ${knob.id}: ${fallbackUrl}`
+      )
+      img.onerror = tryFallback // Set up for final attempt
+      img.src = fallbackUrl
+    }
+  }
+
+  // Start the fallback process
+  tryFallback()
 }
 
 const paginationItems = computed(() => {
@@ -71,7 +128,12 @@ const paginationItems = computed(() => {
         @click="selectKnob(knob.id)"
       >
         <div class="knob-thumbnail">
-          <img :src="`http://localhost:8000/static/thumbnails/${knob.id}.png`" :alt="knob.file" />
+          <img
+            :key="`knob-gallery-${knob.id}`"
+            :src="`http://localhost:8000/static/thumbnails/${knob.id}.png`"
+            :alt="knob.file"
+            @error="onImageError($event, knob)"
+          />
         </div>
         <div class="knob-info">
           <h3 class="knob-name">{{ knob.file }}</h3>

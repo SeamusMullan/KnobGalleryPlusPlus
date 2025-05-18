@@ -8,7 +8,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['start-scraping', 'refresh'])
+const emit = defineEmits(['start-scraping', 'refresh', 'download-thumbnails'])
 </script>
 
 <template>
@@ -16,9 +16,12 @@ const emit = defineEmits(['start-scraping', 'refresh'])
     <h1>KnobGallery++</h1>
 
     <div class="top-bar-actions">
-      <button class="button" @click="$emit('refresh')" :disabled="isScraping">Refresh</button>
-      <button class="button" @click="$emit('start-scraping')" :disabled="isScraping">
+      <button class="button" :disabled="isScraping" @click="$emit('refresh')">Refresh</button>
+      <button class="button" :disabled="isScraping" @click="$emit('start-scraping')">
         {{ isScraping ? 'Scraping...' : 'Scrape Gallery' }}
+      </button>
+      <button class="button" :disabled="isScraping" @click="$emit('download-thumbnails')">
+        Download All Thumbnails
       </button>
     </div>
   </div>

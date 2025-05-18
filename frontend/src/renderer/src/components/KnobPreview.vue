@@ -1,9 +1,26 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
+// Define the Knob interface based on the backend model
+interface Knob {
+  id: number
+  file: string
+  author?: string
+  license: string
+  date: string
+  comment?: string
+  tags?: string
+  size?: string
+  thumbnail_url?: string
+  download_url?: string
+  local_path?: string
+  local_thumbnail_path?: string
+  downloaded?: boolean
+}
+
 const props = defineProps({
   knob: {
-    type: Object,
+    type: Object as () => Knob,
     required: true
   }
 })
@@ -19,6 +36,47 @@ const formatLicense = (license: string): string => {
   return license.replace(/-/g, ' ').replace('_', '.')
 }
 
+// Handle image loading errors
+const onImageError = (event: Event): void => {
+  // When local image fails to load, try the original source
+  const img = event.target as HTMLImageElement
+
+  // Set up a counter to prevent infinite loops with onerror handlers
+  let attemptCount = 0
+  const maxAttempts = 2
+
+  const tryFallback = (): void => {
+    attemptCount++
+    if (attemptCount > maxAttempts) {
+      // If we've tried too many times, use the placeholder
+      img.src =
+        'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect width="200" height="200" fill="#eee"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14px" fill="#999">Image Not Available</text></svg>'
+      img.onerror = null // Prevent any further error handling
+      return
+    }
+
+    if (attemptCount === 1 && props.knob.thumbnail_url) {
+      // First try the thumbnail URL from the API
+      console.log(
+        `Attempt ${attemptCount}: Using fallback image from API for knob ${props.knob.id}: ${props.knob.thumbnail_url}`
+      )
+      img.onerror = tryFallback // Set up for next attempt
+      img.src = props.knob.thumbnail_url
+    } else {
+      // Second attempt, try the constructed URL
+      const fallbackUrl = `https://www.g200kg.com/en/webknobman/img/${props.knob.file}.png`
+      console.log(
+        `Attempt ${attemptCount}: Using constructed fallback for knob ${props.knob.id}: ${fallbackUrl}`
+      )
+      img.onerror = tryFallback // Set up for final attempt
+      img.src = fallbackUrl
+    }
+  }
+
+  // Start the fallback process
+  tryFallback()
+}
+
 // Determine if a file is downloaded
 const isDownloaded = computed(() => {
   return props.knob.downloaded && props.knob.local_path
@@ -32,7 +90,12 @@ const isDownloaded = computed(() => {
     </div>
 
     <div class="preview-image">
-      <img :src="`http://localhost:8000/static/thumbnails/${knob.id}.png`" :alt="knob.file" />
+      <img
+        :key="`knob-preview-${knob.id}`"
+        :src="`http://localhost:8000/static/thumbnails/${knob.id}.png?v=${Date.now()}`"
+        :alt="knob.file"
+        @error="onImageError"
+      />
     </div>
 
     <button class="button" :disabled="isDownloaded" @click="downloadKnob">
