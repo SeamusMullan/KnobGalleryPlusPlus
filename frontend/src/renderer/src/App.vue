@@ -4,6 +4,7 @@ import KnobGallery from './components/KnobGallery.vue'
 import KnobPreview from './components/KnobPreview.vue'
 import TopBar from './components/TopBar.vue'
 import StatusBar from './components/StatusBar.vue'
+import SettingsMenu from './components/SettingsMenu.vue'
 
 // API base URL
 const API_BASE_URL = 'http://localhost:8000'
@@ -25,6 +26,7 @@ const page = ref(1)
 const totalPages = ref(1)
 const totalItems = ref(0)
 const downloadInProgress = ref(false)
+const showSettingsMenu = ref(false)
 
 // Computed properties
 const isScrapingInProgress = computed(() => scrapeStatus.value.in_progress)
@@ -189,6 +191,24 @@ const downloadAllThumbnails = async (): Promise<void> => {
   }
 }
 
+// Settings menu methods
+const toggleSettingsMenu = (): void => {
+  showSettingsMenu.value = !showSettingsMenu.value
+}
+
+interface AppSettings {
+  download_dir: string;
+  max_download_workers: number;
+  max_concurrent_downloads: number;
+  download_batch_size: number;
+  download_retry_attempts: number;
+}
+
+const handleSettingsSaved = (updatedSettings: AppSettings): void => {
+  console.log('Settings updated:', updatedSettings)
+  // You might want to refresh any data that depends on these settings
+}
+
 // Initialize
 onMounted(async () => {
   await fetchKnobs()
@@ -203,6 +223,7 @@ onMounted(async () => {
       @start-scraping="startScraping"
       @refresh="fetchKnobs"
       @download-thumbnails="downloadAllThumbnails"
+      @open-settings="toggleSettingsMenu"
     />
 
     <div class="main-content">
@@ -229,5 +250,45 @@ onMounted(async () => {
     </div>
 
     <StatusBar :total-items="totalItems" :scrape-status="scrapeStatus" />
+    
+    <SettingsMenu 
+      :is-visible="showSettingsMenu"
+      @close="toggleSettingsMenu" 
+      @settings-saved="handleSettingsSaved"
+    />
   </div>
 </template>
+
+<style>
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.gallery-container {
+  display: flex;
+  gap: 20px;
+  height: 100%;
+}
+
+.loading, 
+.error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  font-size: 1.2rem;
+}
+
+.error {
+  color: #e74c3c;
+}
+</style>

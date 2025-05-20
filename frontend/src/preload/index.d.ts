@@ -5,6 +5,7 @@ declare global {
     electron: ElectronAPI
     api: {
       openFolder: (filePath: string) => Promise<void>
+      selectDirectory: () => Promise<string | undefined>
     }
   }
 }

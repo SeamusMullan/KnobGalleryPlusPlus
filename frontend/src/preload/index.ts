@@ -5,6 +5,9 @@ import { electronAPI } from '@electron-toolkit/preload'
 const api = {
   openFolder: (filePath: string) => {
     return ipcRenderer.invoke('open-folder', filePath)
+  },
+  selectDirectory: () => {
+    return ipcRenderer.invoke('select-directory')
   }
 }
 

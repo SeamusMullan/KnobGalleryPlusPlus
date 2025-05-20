@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -57,6 +57,16 @@ app.whenReady().then(() => {
     if (filePath) {
       shell.showItemInFolder(filePath)
     }
+  })
+  
+  // IPC: Select directory dialog
+  ipcMain.handle('select-directory', async () => {
+    const { canceled, filePaths } = await dialog.showOpenDialog({
+      properties: ['openDirectory', 'createDirectory'],
+      title: 'Select Directory for Knob Gallery Downloads'
+    })
+    
+    return canceled ? undefined : filePaths[0]
   })
 
   createWindow()

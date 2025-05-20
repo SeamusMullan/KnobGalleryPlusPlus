@@ -6,6 +6,7 @@ from pathlib import Path
 
 # import your routers here
 from api import data, status
+from api import settings as settings_api
 from core.config import settings
 
 app = FastAPI()
@@ -13,6 +14,7 @@ app = FastAPI()
 # Include your routers here
 app.include_router(data.router, prefix="/data", tags=["data"])
 app.include_router(status.router, prefix="/status", tags=["status"])
+app.include_router(settings_api.router, prefix="/settings", tags=["settings"])
 
 # CORS middleware configuration
 # This allows your frontend to communicate with the backend
